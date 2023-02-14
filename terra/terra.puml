@@ -1,0 +1,18 @@
+@startuml
+start
+:Composite Program;
+split
+  :Terra Functions;
+  :Typechecked & AST;
+  :Terra Text -> Constructor(AST);
+split again
+  :Lua Code;
+end split
+:Lua JIT;
+if (call the constructor) then(yes)
+  :call an internal lib;
+  :construct the specialized function;
+endif
+:execute lua code;
+end
+@enduml

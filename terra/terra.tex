@@ -2,6 +2,7 @@
 
 \usepackage{graphicx}
 \usepackage{listings}
+\usepackage{hyperref}
 
 \lstset{
   columns=fixed,
@@ -217,6 +218,134 @@
 \end{frame}
 
 \begin{frame}
+	\frametitle{Terra Core}
+  \begin{equation}
+    b \, \Sigma \xrightarrow[]{S} b \, \Sigma \tag{SBAS}
+  \end{equation}
+  \newline
+  \begin{equation}
+    \frac{\dot{e_1} \, \Sigma_1 \xrightarrow[]{S} \underline{\dot{e_1}} \, \Sigma_2 \enspace \dot{e_2} \Sigma_2 \xrightarrow[]{S} \underline{\dot{e_2}} \Sigma_3}{\dot{e_1}(\dot{e_2}) \, \Sigma_1 \xrightarrow[]{S} \underline{\dot{e_1}}(\underline{\dot{e_2}}) \, \Sigma_3} \tag{SAPP}
+  \end{equation}
+  \newline
+  \begin{equation}
+    \begin{split}
+      & e \, \Sigma_1 \xrightarrow[]{L} \dot{T} \, \Sigma_2 \enspace \dot{e_1} \, \Sigma_2  \xrightarrow[]{S} \underline{\dot{e_1}} \, \Sigma_3 \enspace \underline{\dot{x}} \, fresh \\
+      & \frac{\Sigma_3 = \Gamma, S, F \enspace \dot{e_2} \, \Sigma_3[x \leftarrow \underline{\dot{e_2}}] \xrightarrow[]{S} \underline{\dot{e_2}} \, \Sigma_4}{tlet \, x: e = \dot{e_1} \, in \, \dot{e_2} \, \Sigma_1 \xrightarrow[]{S} tlet \, \underline{\dot{x}}: \dot{T} = \underline{\dot{e_1}} \, in \, \underline{\dot{e_2}} \, (\Sigma_4 \leftarrow \Gamma)}
+    \end{split} \tag{SLET}
+  \end{equation}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Terra Core}
+  \begin{equation}
+    \frac{e \, \Sigma_1 \xrightarrow[]{L} \underline{\dot{e}} \Sigma_2}{[e] \, \Sigma_1 \xrightarrow[]{S} \underline{\dot{e}} \, \Sigma_2} \tag{SESC}
+  \end{equation}
+  \newline
+  \begin{equation}
+    \frac{[x] \, \Sigma_1 \xrightarrow[]{S} \underline{\dot{e}} \, \Sigma_2}{x \, \Sigma_1 \xrightarrow[]{S} \underline{\dot{e}} \, \Sigma_2} \tag{SVAR}
+  \end{equation}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Terra Core}
+  \begin{equation}
+    b \, \dot{\Gamma}, F \xrightarrow[]{T} b \tag{TBAS}
+  \end{equation}
+  \begin{equation}
+    l \, \dot{\Gamma}, F \xrightarrow[]{T} l \tag{TFUN}
+  \end{equation}
+  \begin{equation}
+    \underline{\dot{x}} \, \dot{\Gamma}, F \xrightarrow[]{T} \dot{\Gamma}(\underline{\dot{x}}) \tag{TVAR}
+  \end{equation}
+  \begin{equation}
+    \frac{\underline{\dot{e_1}} \, \dot{\Gamma}, F \xrightarrow[]{T} v_1 \enspace \underline{\dot{e_2}} \dot{\Gamma}[\underline{\dot{x}} \leftarrow v_1], F \xrightarrow[]{T} v_2}{tlet \, \underline{\dot{x}}: \dot{T} = \underline{\dot{e_1}} \, in \, \underline{\dot{e_2}} \, \dot{\Gamma}, F \xrightarrow[]{T} v_2} \tag{TLET}
+  \end{equation}
+  \begin{equation}
+    \begin{split}
+      & \underline{\dot{e_1}} \, \dot{\Gamma}, F \xrightarrow[]{T} l \enspace \underline{\dot{e_2}} \, \dot{\Gamma}, F \xrightarrow[]{T} v_1 \\
+      & \frac{F(l) = <\underline{\dot{x}}, \dot{T_1}, \dot{T_2}, \underline{\dot{e_3}}> \enspace \underline{\dot{e_3}} \, \dot{\Gamma}[\underline{\dot{x}} \leftarrow v_1], F \xrightarrow[]{T} v_2}{\underline{\dot{e_1}}(\underline{\dot{e_2}}) \, \dot{\Gamma}, F \xrightarrow[]{T} v_2}
+    \end{split}\tag{TAPP}
+  \end{equation}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Terra Core}
+  \begin{itemize}
+  \item The typing rules are very simple. Skip.\pause
+  \item Let's see the proof.\pause
+  \item No proof! :)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Some Important Designs}
+  \begin{itemize}
+  \item Use shared lexical environments to reduce the need for escape expressions.\pause
+  \item Perform specialization eagerly.\pause
+  \item Perform typechecking and linking lazily.\pause
+  \item Type Reflection API.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Why Specialize Eagerly?}
+  \begin{equation*}
+    \begin{split}
+      & let \, x_1\, =\, 0 \\
+      & let \, y\, =\, ter\, tdecl(x_2:\, int):\, int\, \{x_1\}\, in \\
+      & x_1\, :=\, 1;\, y(0)
+    \end{split}
+  \end{equation*} \pause
+  \newline
+  \begin{itemize}
+  \item $y(0) = 0$ if we specialize eagerly.\pause
+  \item If not, the Terra runtime must depends on the Lua runtime to get correct value of $x_1$.\pause
+  \item Or we need to re-compile $y$ when $x_1$ changes.\pause
+  \item Requires declaration before using a symbol, which makes recusive function impossible.\pause
+  \item Separate the declaration and definition.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Why Typecheck Lazily?}
+  \begin{itemize}
+  \item Possible if we use type annotations.\pause
+  \item Since a function may have no definition, this may not help.\pause
+  \item So no need for type annotations.\pause
+  \item Easier to override the default bevavior of a type.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Type Reflection}
+  \begin{itemize}
+  \item Terra types are first-class in Lua.\pause
+  \item Provide methods in Lua(e.g. t:ispointer or t:isstruct).\pause
+  \item Use entries table to describe structures' in-memory layout.
+  \end{itemize}
+
+  \begin{lstlisting}
+    struct Complex {}
+    Complex.entries:insert { field = "real",
+      type = float }
+    Complex.entries:insert { field = "imag",
+      type = float }
+\end{lstlisting}\pause
+
+  \begin{itemize}
+  \item Also the metamethods table: override certain compile-time behaviors(e.g. implicit conversion).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Evaluation}
+  \begin{itemize}
+  \item Similar performance to ATLAS, which is written in C and assembly.\pause
+  \item Shorter code, easier to read/write/maintain.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
 	\frametitle{Summary}
   \begin{itemize}
   \item Two-Languages design: Lua + Terra.\pause
@@ -239,6 +368,14 @@
 	\frametitle{Shortages}
   \begin{itemize}
   \item Lua is not statically typed.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Reference}
+  \begin{itemize}
+  \item Zachary DeVito, James Hegarty, Alex Aiken, Pat Hanrahan, and Jan Vitek. 2013. Terra: A multi-stage language for highperformance computing. In Proceedings of the 34th ACM SIGPLAN Conference on Programming Language Design and Implementation (PLDI’13). ACM, New York, 105–116. DOI:\url{https://doi.org/10.1145/2491956.2462166}
+  \item Terra: A low-level counterpart to Lua. \url{https://terralang.org/}
   \end{itemize}
 \end{frame}
 

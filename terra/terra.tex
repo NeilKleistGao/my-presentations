@@ -120,7 +120,100 @@
 
 \begin{frame}
 	\frametitle{The Formal Calculus: Terra Core}
-  % TODO:
+  \begin{itemize}
+  \item For simplicity, Lua := imperative language + first-class functions, Terra := purely functional language\pause
+  \item Lua expression: $e$, evaluation of Lua: $\xrightarrow[]{L}$\pause
+  \item Terra expression: $\dot{e}$, specialization of Terra: $\xrightarrow[]{S}$\pause
+  \item Specialized Terra expression: $\underline{\dot{e}}$, execution of specailized Terra expression: $\xrightarrow[]{T}$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Terra Core}
+  Lua Syntax:
+  \newline
+  \begin{equation}
+    \begin{split}
+      e\, ::=\, & b\, |\, \dot{T}\, |\, x\, |\, let\, x\, =\, e\, in\, e\, |\, x\, :=\, e\, |\, e(e)\, |\, fun(x)\{e\}\, |\, tdecl\, | \\ & ter\, e(x:\, e):\, e \{\dot{e}\}\, |\, \backprime \dot{e}\\
+      v\, ::=\, & b\, |\, l\, |\, \dot{T}\, |\, <\Gamma, x, e>\, |\, \underline{\dot{e}}\\
+      \dot{T} ::=\, & \dot{B}\, |\, \dot{T} \rightarrow \dot{T}
+    \end{split} \notag
+  \end{equation}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Terra Core}
+  Terra Syntax:
+  \newline
+  \begin{equation}
+    \begin{split}
+      \dot{e}\, ::=\, & b\, |\, x\, | \dot{e}(\dot{e}) |\, tlet\, x:\, e\, =\, \dot{e}\, in\, \dot{e}\, |\, [e]\\
+      \underline{\dot{e}}\, ::=\, & b\, |\, \underline{\dot{x}}\, | \underline{\dot{e}}(\underline{\dot{e}}) |\, tlet\, \underline{\dot{x}}:\, \dot{T}\, =\, \underline{\dot{e}}\, in\, \underline{\dot{e}}\, |\, l
+    \end{split} \notag
+  \end{equation}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Terra Core}
+  \begin{equation}
+    v\, \Sigma \xrightarrow[]{L} v\, \Sigma \tag{LVAL}
+  \end{equation}
+  \newline
+  \begin{equation}
+    \frac{\Sigma = \Gamma, S, F}{x\, \Sigma \xrightarrow[]{L} S(\Gamma{(x)})\, \Sigma}\tag{LVAR}
+  \end{equation}
+  \newline
+  \begin{equation}
+    \frac{e_1 \, \Sigma_1 \xrightarrow[]{L} v_1 \, \Sigma_2 \enspace \Sigma_2 = \Gamma, S, F \enspace e_2 \Sigma_2[x \leftarrow v_1] \xrightarrow[]{L} v_2 \Sigma_3}{let \, x = e_1 \, in \, e_2 \, \Sigma \xrightarrow[]{L} v_2(\Sigma_3 \leftarrow \Gamma)} \tag{LLET}
+  \end{equation}
+  \newline
+  \begin{equation}
+    \frac{e \, \Sigma \xrightarrow[]{L} v\, \Gamma, S, F \enspace \Gamma{(x)} = a}{x := e \, \Sigma \xrightarrow[]{L} v \, \Gamma, S[a \leftarrow v], F} \tag{LASN}
+  \end{equation}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Terra Core}
+	\begin{equation}
+    \frac{\Sigma = \Gamma, S, F}{fun(x)\{e\} \, \Sigma \xrightarrow[]{L} <\Gamma, x, e> \, \Sigma} \tag{LFUN}
+  \end{equation}
+  \newline
+  \begin{equation}
+    \begin{split}
+      e_1 \, \Sigma_1 \xrightarrow[]{L} <\Gamma_1, x, e_3> \enspace e_2 \, \Sigma_2 \xrightarrow[]{L} v_1 \, \Gamma_2, S, F \\
+      \frac{a \, fresh \enspace e_3 \, \Gamma_1[x \leftarrow a], S[a \leftarrow v_1], F \xrightarrow[]{L} v_2 \, \Sigma_3}{e_1(e_2) \, \Sigma_1 \xrightarrow[]{L} v_2 \, (\Sigma_3 \leftarrow \Gamma_2)}
+    \end{split} \tag{LAPP}
+  \end{equation}
+  \newline
+  \begin{equation}
+    \frac{l\, fresh \enspace \Sigma = \Gamma, S, F}{tdecl \Sigma \xrightarrow[]{L} l \, \Gamma, S, F[l \leftarrow \bullet]} \tag{LTDECL}
+  \end{equation}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Terra Core}
+	\begin{equation}
+    \begin{split}
+      & e_1 \, \Sigma_1 \xrightarrow[]{L} l \, \Sigma_2 \enspace e_2 \, \Sigma_2 \xrightarrow[]{L} \dot{T_1} \, \Sigma_3 \enspace e_3 \, \Sigma_3 \xrightarrow[]{L} \dot{T_2} \, \Sigma_4 \\
+      & \Sigma_4 = \Gamma_1, S_1, F_1 \enspace \underline{\dot{x}} \, fresh \\
+      & \frac{\dot{e} \, \Sigma_4[x \leftarrow \underline{\dot{x}}] \xrightarrow[]{S} \underline{\dot{e}} \, \Gamma_2, S_2, F_2 \enspace F_2(l) = \bullet}{ter \, e_1(x: e_2): e_3\{\dot{e}\} \, \Sigma_1 \xrightarrow[]{L} l \, \Gamma_1, S_2, F_2[l \leftarrow <\underline{\dot{x}}, \dot{T_1}, \dot{T_2}, \underline{\dot{e}}>]}
+    \end{split} \tag{LTDEFN}
+  \end{equation}
+  \newline
+  \begin{equation}
+    \frac{\dot{e} \, \Sigma_1 \xrightarrow[]{S} \underline{\dot{e}} \, \Sigma_2}{\backprime{\dot{e}} \, \Sigma_1 \xrightarrow[]{L} \underline{\dot{e}} \, \Sigma_2}\tag{LTQUOTE}
+  \end{equation}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Terra Core}
+  \begin{equation}
+    \begin{split}
+      & e_1 \, \Sigma_1 \xrightarrow[]{L} l \, \Sigma_2 \enspace e_2 \, \Sigma_2 \xrightarrow[]{L} b_1 \, \Sigma_3 \\
+      & \Sigma_3 = \Gamma, S, F \enspace F(l) = <\underline{\dot{x}}, \dot{T_1}, \dot{T_2}, \underline{\dot{e}}> \enspace b_1 \in \dot{T_1} \\
+      & \frac{[\underline{\dot{x}}: \dot{T_1}], [l: \dot{T_1} \rightarrow \dot{T_2}], F_2 \vdash \underline{\dot{e}}: \dot{T_2} \enspace \underline{\dot{e}}[\underline{\dot{x}} \leftarrow b], F \xrightarrow[]{T} b_2}{e_1(e_2) \, \Sigma_1 \xrightarrow[]{L} b_2 \, \Sigma_3}
+    \end{split} \tag{LTAPP}
+  \end{equation}
 \end{frame}
 
 \begin{frame}
@@ -145,8 +238,7 @@
 \begin{frame}
 	\frametitle{Shortages}
   \begin{itemize}
-  \item Lua is not statically typed.\pause
-  \item LLVM + Lua is compromise, because we don't want to re-implement the whole LuaJIT!
+  \item Lua is not statically typed.
   \end{itemize}
 \end{frame}
 

@@ -25,6 +25,11 @@
 
 \maketitle
 
+\def\LArr{\xrightarrow[]{L}}
+\def\SArr{\xrightarrow[]{S}}
+\def\TArr{\xrightarrow[]{T}}
+\def\ude#1{\underline{\dot{#1}}}
+
 \begin{frame}
 	\frametitle{Goals}
   \begin{itemize}
@@ -122,9 +127,9 @@
 	\frametitle{The Formal Calculus: Terra Core}
   \begin{itemize}
   \item For simplicity, Lua := imperative language + first-class functions, Terra := purely functional language\pause
-  \item Lua expression: $e$, evaluation of Lua: $\xrightarrow[]{L}$\pause
-  \item Terra expression: $\dot{e}$, specialization of Terra: $\xrightarrow[]{S}$\pause
-  \item Specialized Terra expression: $\underline{\dot{e}}$, execution of specailized Terra expression: $\xrightarrow[]{T}$
+  \item Lua expression: $e$, evaluation of Lua: $\LArr$\pause
+  \item Terra expression: $\dot{e}$, specialization of Terra: $\SArr$\pause
+  \item Specialized Terra expression: $\ude{e}$, execution of specailized Terra expression: $\TArr$
   \end{itemize}
 \end{frame}
 
@@ -134,9 +139,9 @@
   \newline
   \begin{equation}
     \begin{split}
-      e\, ::=\, & b\, |\, \dot{T}\, |\, x\, |\, let\, x\, =\, e\, in\, e\, |\, x\, :=\, e\, |\, e(e)\, |\, fun(x)\{e\}\, |\, tdecl\, | \\ & ter\, e(x:\, e):\, e \{\dot{e}\}\, |\, \backprime \dot{e}\\
-      v\, ::=\, & b\, |\, l\, |\, \dot{T}\, |\, <\Gamma, x, e>\, |\, \underline{\dot{e}}\\
-      \dot{T} ::=\, & \dot{B}\, |\, \dot{T} \rightarrow \dot{T}
+      e\thickspace ::=\thickspace & b\thickspace |\thickspace \dot{T}\thickspace |\thickspace x\thickspace |\thickspace let\thickspace x\thickspace =\thickspace e\thickspace in\thickspace e\thickspace |\thickspace x\thickspace :=\thickspace e\thickspace |\thickspace e(e)\thickspace |\thickspace fun(x)\{e\}\thickspace |\thickspace tdecl\thickspace | \\ & ter\thickspace e(x:\thickspace e):\thickspace e \{\dot{e}\}\thickspace |\thickspace \backprime \dot{e}\\
+      v\thickspace ::=\thickspace & b\thickspace |\thickspace l\thickspace |\thickspace \dot{T}\thickspace |\thickspace <\Gamma, x, e>\thickspace |\thickspace \ude{e}\\
+      \dot{T} ::=\thickspace & \dot{B}\thickspace |\thickspace \dot{T} \rightarrow \dot{T}
     \end{split} \notag
   \end{equation}
 \end{frame}
@@ -147,8 +152,8 @@
   \newline
   \begin{equation}
     \begin{split}
-      \dot{e}\, ::=\, & b\, |\, x\, | \dot{e}(\dot{e}) |\, tlet\, x:\, e\, =\, \dot{e}\, in\, \dot{e}\, |\, [e]\\
-      \underline{\dot{e}}\, ::=\, & b\, |\, \underline{\dot{x}}\, | \underline{\dot{e}}(\underline{\dot{e}}) |\, tlet\, \underline{\dot{x}}:\, \dot{T}\, =\, \underline{\dot{e}}\, in\, \underline{\dot{e}}\, |\, l
+      \dot{e}\thickspace ::=\thickspace & b\thickspace |\thickspace x\thickspace | \dot{e}(\dot{e}) |\thickspace tlet\thickspace x:\thickspace e\thickspace =\thickspace \dot{e}\thickspace in\thickspace \dot{e}\thickspace |\thickspace [e]\\
+      \ude{e}\thickspace ::=\thickspace & b\thickspace |\thickspace\ude{x}\thickspace | \ude{e}(\ude{e}) |\thickspace tlet\thickspace \ude{x}:\thickspace \dot{T}\thickspace =\thickspace \ude{e}\thickspace in\thickspace \ude{e}\thickspace |\thickspace l
     \end{split} \notag
   \end{equation}
 \end{frame}
@@ -156,115 +161,105 @@
 \begin{frame}
   \frametitle{Terra Core}
   \begin{equation}
-    v\, \Sigma \xrightarrow[]{L} v\, \Sigma \tag{LVAL}
+    v\thickspace \Sigma \LArr v\thickspace \Sigma \tag{LVAL}
   \end{equation}
   \newline
   \begin{equation}
-    \frac{\Sigma = \Gamma, S, F}{x\, \Sigma \xrightarrow[]{L} S(\Gamma{(x)})\, \Sigma}\tag{LVAR}
+    \frac{\Sigma = \Gamma, S, F}{x\thickspace \Sigma \LArr S(\Gamma{(x)})\thickspace \Sigma}\tag{LVAR}
   \end{equation}
   \newline
   \begin{equation}
-    \frac{e_1 \, \Sigma_1 \xrightarrow[]{L} v_1 \, \Sigma_2 \enspace \Sigma_2 = \Gamma, S, F \enspace e_2 \Sigma_2[x \leftarrow v_1] \xrightarrow[]{L} v_2 \Sigma_3}{let \, x = e_1 \, in \, e_2 \, \Sigma \xrightarrow[]{L} v_2(\Sigma_3 \leftarrow \Gamma)} \tag{LLET}
+    \frac{e_1 \thickspace \Sigma_1 \LArr v_1 \thickspace \Sigma_2 \quad \Sigma_2 = \Gamma, S, F \quad e_2 \Sigma_2[x \leftarrow v_1] \LArr v_2 \Sigma_3}{let \thickspace x = e_1 \thickspace in \thickspace e_2 \thickspace \Sigma \LArr v_2(\Sigma_3 \leftarrow \Gamma)} \tag{LLET}
   \end{equation}
   \newline
   \begin{equation}
-    \frac{e \, \Sigma \xrightarrow[]{L} v\, \Gamma, S, F \enspace \Gamma{(x)} = a}{x := e \, \Sigma \xrightarrow[]{L} v \, \Gamma, S[a \leftarrow v], F} \tag{LASN}
+    \frac{e \thickspace \Sigma \LArr v\thickspace \Gamma, S, F \quad \Gamma{(x)} = a}{x := e \thickspace \Sigma \LArr v \thickspace \Gamma, S[a \leftarrow v], F} \tag{LASN}
   \end{equation}
 \end{frame}
 
 \begin{frame}
   \frametitle{Terra Core}
 	\begin{equation}
-    \frac{\Sigma = \Gamma, S, F}{fun(x)\{e\} \, \Sigma \xrightarrow[]{L} <\Gamma, x, e> \, \Sigma} \tag{LFUN}
+    \frac{\Sigma = \Gamma, S, F}{fun(x)\{e\} \thickspace \Sigma \LArr <\Gamma, x, e> \thickspace \Sigma} \tag{LFUN}
   \end{equation}
   \newline
-  \begin{equation}
-    \begin{split}
-      e_1 \, \Sigma_1 \xrightarrow[]{L} <\Gamma_1, x, e_3> \enspace e_2 \, \Sigma_2 \xrightarrow[]{L} v_1 \, \Gamma_2, S, F \\
-      \frac{a \, fresh \enspace e_3 \, \Gamma_1[x \leftarrow a], S[a \leftarrow v_1], F \xrightarrow[]{L} v_2 \, \Sigma_3}{e_1(e_2) \, \Sigma_1 \xrightarrow[]{L} v_2 \, (\Sigma_3 \leftarrow \Gamma_2)}
-    \end{split} \tag{LAPP}
-  \end{equation}
+  \begin{gather*}
+    e_1 \thickspace \Sigma_1 \LArr <\Gamma_1, x, e_3> \quad e_2 \thickspace \Sigma_2 \LArr v_1 \thickspace \Gamma_2, S, F \\
+    \frac{a \thickspace fresh \quad e_3 \thickspace \Gamma_1[x \leftarrow a], S[a \leftarrow v_1], F \LArr v_2 \thickspace \Sigma_3}{e_1(e_2) \thickspace \Sigma_1 \LArr v_2 \thickspace (\Sigma_3 \leftarrow \Gamma_2)}\tag{LAPP}
+  \end{gather*}
   \newline
   \begin{equation}
-    \frac{l\, fresh \enspace \Sigma = \Gamma, S, F}{tdecl \Sigma \xrightarrow[]{L} l \, \Gamma, S, F[l \leftarrow \bullet]} \tag{LTDECL}
+    \frac{l\thickspace fresh \quad \Sigma = \Gamma, S, F}{tdecl \Sigma \LArr l \thickspace \Gamma, S, F[l \leftarrow \bullet]} \tag{LTDECL}
   \end{equation}
 \end{frame}
 
 \begin{frame}
   \frametitle{Terra Core}
-	\begin{equation}
-    \begin{split}
-      & e_1 \, \Sigma_1 \xrightarrow[]{L} l \, \Sigma_2 \enspace e_2 \, \Sigma_2 \xrightarrow[]{L} \dot{T_1} \, \Sigma_3 \enspace e_3 \, \Sigma_3 \xrightarrow[]{L} \dot{T_2} \, \Sigma_4 \\
-      & \Sigma_4 = \Gamma_1, S_1, F_1 \enspace \underline{\dot{x}} \, fresh \\
-      & \frac{\dot{e} \, \Sigma_4[x \leftarrow \underline{\dot{x}}] \xrightarrow[]{S} \underline{\dot{e}} \, \Gamma_2, S_2, F_2 \enspace F_2(l) = \bullet}{ter \, e_1(x: e_2): e_3\{\dot{e}\} \, \Sigma_1 \xrightarrow[]{L} l \, \Gamma_1, S_2, F_2[l \leftarrow <\underline{\dot{x}}, \dot{T_1}, \dot{T_2}, \underline{\dot{e}}>]}
-    \end{split} \tag{LTDEFN}
-  \end{equation}
+  \begin{gather*}
+    e_1 \thickspace \Sigma_1 \LArr l \thickspace \Sigma_2 \quad e_2 \thickspace \Sigma_2 \LArr \dot{T_1} \thickspace \Sigma_3 \quad e_3 \thickspace \Sigma_3 \LArr \dot{T_2} \thickspace \Sigma_4 \\
+    \Sigma_4 = \Gamma_1, S_1, F_1 \quad \ude{x} \thickspace fresh \\
+    \frac{\dot{e} \thickspace \Sigma_4[x \leftarrow \ude{x}] \SArr \ude{x} \thickspace \Gamma_2, S_2, F_2 \quad F_2(l) = \bullet}{ter \thickspace e_1(x: e_2): e_3\{\dot{e}\} \thickspace \Sigma_1 \LArr l \thickspace \Gamma_1, S_2, F_2[l \leftarrow <\ude{x}, \dot{T_1}, \dot{T_2}, \ude{e}>]}\tag{LTDEFN}
+  \end{gather*}
   \newline
   \begin{equation}
-    \frac{\dot{e} \, \Sigma_1 \xrightarrow[]{S} \underline{\dot{e}} \, \Sigma_2}{\backprime{\dot{e}} \, \Sigma_1 \xrightarrow[]{L} \underline{\dot{e}} \, \Sigma_2}\tag{LTQUOTE}
+    \frac{\dot{e} \thickspace \Sigma_1 \SArr \ude{e} \thickspace \Sigma_2}{\backprime{\dot{e}} \thickspace \Sigma_1 \LArr \ude{e} \thickspace \Sigma_2}\tag{LTQUOTE}
   \end{equation}
 \end{frame}
 
 \begin{frame}
   \frametitle{Terra Core}
+  \begin{gather*}
+    e_1 \thickspace \Sigma_1 \LArr l \thickspace \Sigma_2 \quad e_2 \thickspace \Sigma_2 \LArr b_1 \thickspace \Sigma_3 \\
+    \Sigma_3 = \Gamma, S, F \quad F(l) = <\ude{x}, \dot{T_1}, \dot{T_2}, \ude{e}> \quad b_1 \in \dot{T_1} \\
+    \frac{[\ude{x}: \dot{T_1}], [l: \dot{T_1} \rightarrow \dot{T_2}], F_2 \vdash \ude{e}: \dot{T_2} \quad \ude{e}[\ude{x} \leftarrow b], F \TArr b_2}{e_1(e_2) \thickspace \Sigma_1 \LArr b_2 \thickspace \Sigma_3}\tag{LTAPP}
+  \end{gather*}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Terra Core}
   \begin{equation}
-    \begin{split}
-      & e_1 \, \Sigma_1 \xrightarrow[]{L} l \, \Sigma_2 \enspace e_2 \, \Sigma_2 \xrightarrow[]{L} b_1 \, \Sigma_3 \\
-      & \Sigma_3 = \Gamma, S, F \enspace F(l) = <\underline{\dot{x}}, \dot{T_1}, \dot{T_2}, \underline{\dot{e}}> \enspace b_1 \in \dot{T_1} \\
-      & \frac{[\underline{\dot{x}}: \dot{T_1}], [l: \dot{T_1} \rightarrow \dot{T_2}], F_2 \vdash \underline{\dot{e}}: \dot{T_2} \enspace \underline{\dot{e}}[\underline{\dot{x}} \leftarrow b], F \xrightarrow[]{T} b_2}{e_1(e_2) \, \Sigma_1 \xrightarrow[]{L} b_2 \, \Sigma_3}
-    \end{split} \tag{LTAPP}
+    b \thickspace \Sigma \SArr b \thickspace \Sigma \tag{SBAS}
+  \end{equation}
+  \newline
+  \begin{equation}
+    \frac{\dot{e_1} \thickspace \Sigma_1 \SArr \ude{e_1} \thickspace \Sigma_2 \quad \dot{e_2} \Sigma_2 \SArr \ude{e_2} \Sigma_3}{\dot{e_1}(\dot{e_2}) \thickspace \Sigma_1 \SArr \ude{e_1}(\ude{e_2}) \thickspace \Sigma_3} \tag{SAPP}
+  \end{equation}
+  \newline
+  \begin{gather*}
+    e \thickspace \Sigma_1 \LArr \dot{T} \thickspace \Sigma_2 \quad \dot{e_1} \thickspace \Sigma_2  \SArr \ude{e_1} \thickspace \Sigma_3 \quad \ude{x} \thickspace fresh \\
+    \frac{\Sigma_3 = \Gamma, S, F \quad \dot{e_2} \thickspace \Sigma_3[x \leftarrow \ude{e_2}] \SArr \ude{e_2} \thickspace \Sigma_4}{tlet \thickspace x: e = \dot{e_1} \thickspace in \thickspace \dot{e_2} \thickspace \Sigma_1 \SArr tlet \thickspace \ude{x}: \dot{T} = \ude{e_1} \thickspace in \thickspace \ude{e_2} \thickspace (\Sigma_4 \leftarrow \Gamma)}\tag{SLET}
+  \end{gather*}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Terra Core}
+  \begin{equation}
+    \frac{e \thickspace \Sigma_1 \LArr \ude{e} \Sigma_2}{[e] \thickspace \Sigma_1 \SArr \ude{e} \thickspace \Sigma_2} \tag{SESC}
+  \end{equation}
+  \newline
+  \begin{equation}
+    \frac{[x] \thickspace \Sigma_1 \SArr \ude{e} \thickspace \Sigma_2}{x \thickspace \Sigma_1 \SArr \ude{e} \thickspace \Sigma_2} \tag{SVAR}
   \end{equation}
 \end{frame}
 
 \begin{frame}
 	\frametitle{Terra Core}
   \begin{equation}
-    b \, \Sigma \xrightarrow[]{S} b \, \Sigma \tag{SBAS}
-  \end{equation}
-  \newline
-  \begin{equation}
-    \frac{\dot{e_1} \, \Sigma_1 \xrightarrow[]{S} \underline{\dot{e_1}} \, \Sigma_2 \enspace \dot{e_2} \Sigma_2 \xrightarrow[]{S} \underline{\dot{e_2}} \Sigma_3}{\dot{e_1}(\dot{e_2}) \, \Sigma_1 \xrightarrow[]{S} \underline{\dot{e_1}}(\underline{\dot{e_2}}) \, \Sigma_3} \tag{SAPP}
-  \end{equation}
-  \newline
-  \begin{equation}
-    \begin{split}
-      & e \, \Sigma_1 \xrightarrow[]{L} \dot{T} \, \Sigma_2 \enspace \dot{e_1} \, \Sigma_2  \xrightarrow[]{S} \underline{\dot{e_1}} \, \Sigma_3 \enspace \underline{\dot{x}} \, fresh \\
-      & \frac{\Sigma_3 = \Gamma, S, F \enspace \dot{e_2} \, \Sigma_3[x \leftarrow \underline{\dot{e_2}}] \xrightarrow[]{S} \underline{\dot{e_2}} \, \Sigma_4}{tlet \, x: e = \dot{e_1} \, in \, \dot{e_2} \, \Sigma_1 \xrightarrow[]{S} tlet \, \underline{\dot{x}}: \dot{T} = \underline{\dot{e_1}} \, in \, \underline{\dot{e_2}} \, (\Sigma_4 \leftarrow \Gamma)}
-    \end{split} \tag{SLET}
-  \end{equation}
-\end{frame}
-
-\begin{frame}
-	\frametitle{Terra Core}
-  \begin{equation}
-    \frac{e \, \Sigma_1 \xrightarrow[]{L} \underline{\dot{e}} \Sigma_2}{[e] \, \Sigma_1 \xrightarrow[]{S} \underline{\dot{e}} \, \Sigma_2} \tag{SESC}
-  \end{equation}
-  \newline
-  \begin{equation}
-    \frac{[x] \, \Sigma_1 \xrightarrow[]{S} \underline{\dot{e}} \, \Sigma_2}{x \, \Sigma_1 \xrightarrow[]{S} \underline{\dot{e}} \, \Sigma_2} \tag{SVAR}
-  \end{equation}
-\end{frame}
-
-\begin{frame}
-	\frametitle{Terra Core}
-  \begin{equation}
-    b \, \dot{\Gamma}, F \xrightarrow[]{T} b \tag{TBAS}
+    b \thickspace \dot{\Gamma}, F \TArr b \tag{TBAS}
   \end{equation}
   \begin{equation}
-    l \, \dot{\Gamma}, F \xrightarrow[]{T} l \tag{TFUN}
+    l \thickspace \dot{\Gamma}, F \TArr l \tag{TFUN}
   \end{equation}
   \begin{equation}
-    \underline{\dot{x}} \, \dot{\Gamma}, F \xrightarrow[]{T} \dot{\Gamma}(\underline{\dot{x}}) \tag{TVAR}
+    \ude{x} \thickspace \dot{\Gamma}, F \TArr \dot{\Gamma}(\ude{x}) \tag{TVAR}
   \end{equation}
   \begin{equation}
-    \frac{\underline{\dot{e_1}} \, \dot{\Gamma}, F \xrightarrow[]{T} v_1 \enspace \underline{\dot{e_2}} \dot{\Gamma}[\underline{\dot{x}} \leftarrow v_1], F \xrightarrow[]{T} v_2}{tlet \, \underline{\dot{x}}: \dot{T} = \underline{\dot{e_1}} \, in \, \underline{\dot{e_2}} \, \dot{\Gamma}, F \xrightarrow[]{T} v_2} \tag{TLET}
+    \frac{\ude{e_1} \thickspace \dot{\Gamma}, F \TArr v_1 \quad \ude{e_2} \dot{\Gamma}[\ude{x} \leftarrow v_1], F \TArr v_2}{tlet \thickspace \ude{x}: \dot{T} = \ude{e_1} \thickspace in \thickspace \ude{e_2} \thickspace \dot{\Gamma}, F \TArr v_2} \tag{TLET}
   \end{equation}
-  \begin{equation}
-    \begin{split}
-      & \underline{\dot{e_1}} \, \dot{\Gamma}, F \xrightarrow[]{T} l \enspace \underline{\dot{e_2}} \, \dot{\Gamma}, F \xrightarrow[]{T} v_1 \\
-      & \frac{F(l) = <\underline{\dot{x}}, \dot{T_1}, \dot{T_2}, \underline{\dot{e_3}}> \enspace \underline{\dot{e_3}} \, \dot{\Gamma}[\underline{\dot{x}} \leftarrow v_1], F \xrightarrow[]{T} v_2}{\underline{\dot{e_1}}(\underline{\dot{e_2}}) \, \dot{\Gamma}, F \xrightarrow[]{T} v_2}
-    \end{split}\tag{TAPP}
-  \end{equation}
+  \begin{gather*}
+    \ude{e_1} \thickspace \dot{\Gamma}, F \TArr l \quad \ude{e_2} \thickspace \dot{\Gamma}, F \TArr v_1 \\
+    \frac{F(l) = <\ude{x}, \dot{T_1}, \dot{T_2}, \ude{e_3}> \quad \ude{e_3} \thickspace \dot{\Gamma}[\ude{x} \leftarrow v_1], F \TArr v_2}{\ude{e_1}(\ude{e_2}) \thickspace \dot{\Gamma}, F \TArr v_2}\tag{TAPP}
+  \end{gather*}
 \end{frame}
 
 \begin{frame}
@@ -290,9 +285,9 @@
 	\frametitle{Why Specialize Eagerly?}
   \begin{equation*}
     \begin{split}
-      & let \, x_1\, =\, 0 \\
-      & let \, y\, =\, ter\, tdecl(x_2:\, int):\, int\, \{x_1\}\, in \\
-      & x_1\, :=\, 1;\, y(0)
+      & let \thickspace x_1\thickspace =\thickspace 0 \\
+      & let \thickspace y\thickspace =\thickspace ter\thickspace tdecl(x_2:\thickspace int):\thickspace int\thickspace \{x_1\}\thickspace in \\
+      & x_1\thickspace :=\thickspace 1;\thickspace y(0)
     \end{split}
   \end{equation*} \pause
   \newline

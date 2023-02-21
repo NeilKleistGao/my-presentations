@@ -3,7 +3,7 @@ start
 :Composite Program;
 split
   :Terra Functions;
-  :Typechecked & AST;
+  :AST;
   :Terra Text -> Constructor(AST);
 split again
   :Lua Code;

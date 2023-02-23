@@ -5,15 +5,17 @@
 \usepackage{hyperref}
 
 \lstset{
+  basicstyle=\scriptsize,
   columns=fixed,
   frame=none,
   backgroundcolor=\color[RGB]{245,245,244},
   keywordstyle=\color[RGB]{40,40,255},
-  numberstyle=\footnotesize\color{darkgray},
+  numberstyle=\scriptsize\color{darkgray},
+  comment=[l]{--},
   commentstyle=\it\color[RGB]{0,96,96},
   stringstyle=\rmfamily\slshape\color[RGB]{128,0,0},
   showstringspaces=false,
-  morekeywords={terra, if, else, end, int, then, return, struct, float, local, quote, function}
+  morekeywords={terra, if, else, end, int, then, return, struct, float, local, quote, function, var, for, do}
 }
 
 \usetheme{AnnArbor}
@@ -45,9 +47,9 @@
   \begin{itemize}
   \item In this case, we get three components.\pause
   \item Optimizer: generate plan to guide how to generate code.\pause
-  \item Compiler: generate taget code based on the plan.\pause
+  \item Compiler: generate target code based on the plan.\pause
   \item Runtime: support the generated code and provide feedback to the optimizer.\pause
-  \item Problem1: How can we get the runtime statistics in the compiler and generate high-performance code dynamically?\pause
+  \item Problem1: Separating compiler and optimizer from the runtime makes it difficult to feed runtime statistics back to the compiler to perform problem-specific optimizations.\pause
   \item Problem2: How can we re-use legacy libraries?
   \end{itemize}
 \end{frame}
@@ -66,7 +68,9 @@
 
 \begin{frame}
 	\frametitle{Two-Language Design}
-  \includegraphics[scale=0.3]{terra.png}
+  \begin{center}
+    \includegraphics[scale=0.3]{terra.png}
+  \end{center}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -112,7 +116,9 @@
 
 \begin{frame}
 	\frametitle{It Just Works!}
-  \includegraphics[scale=0.45]{terra2.png}
+  \begin{center}
+    \includegraphics[scale=0.45]{terra2.png}
+  \end{center}
 \end{frame}
 
 \begin{frame}
@@ -121,6 +127,85 @@
   \item Now we can generate code dynamically.\pause
   \item e.g. block the loop nests to make the memory access more friendly to the cache.
   \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{A Simple Filter Example}
+  \begin{lstlisting}
+GreyscaleImage = Image(float)
+terra laplace(img: &GreyscaleImage,
+out: &GreyscaleImage) : {}
+  --shrink result, do not calculate boundaries
+  var newN = img.N - 2
+  out:init(newN)
+  for i = 0,newN do
+    for j = 0,newN do
+      var v = img:get(i+0,j+1) + img:get(i+2,j+1)
+      10 + img:get(i+1,j+2) + img:get(i+1,j+0)
+      - 4 * img:get(i+1,j+1)
+      out:set(i,j,v)
+    end
+  end
+end
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{A Simple Filter Example}
+  \begin{lstlisting}
+terra runlaplace(input: rawstring,
+output: rawstring) : {}
+  var i = GreyscaleImage {}
+  var o = GreyscaleImage {}
+  i:load(input)
+  laplace(&i,&o)
+  o:save(output)
+  i:free(); o:free()
+end
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Optimize The Filter}
+  \begin{lstlisting}
+function blockedloop(N,blocksizes,bodyfn)
+  local function generatelevel(n,ii,jj,bb)
+    if n > #blocksizes then
+      return bodyfn(ii,jj)
+    end
+    local blocksize = blocksizes[n]
+    return quote
+      for i = ii,min(ii+bb,N),blocksize do
+        for j = jj,min(jj+bb,N),blocksize do
+          [ generatelevel(n+1,i,j,blocksize) ]
+        end
+      end
+    end
+  end
+  return generatelevel(1,0,0,N)
+end
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Optimize The Filter}
+  \begin{lstlisting}
+GreyscaleImage = Image(float)
+terra laplace(img: &GreyscaleImage,
+out: &GreyscaleImage) : {}
+  --shrink result, do not calculate boundaries
+  var newN = img.N - 2
+  out:init(newN)
+  [blockedloop(newN,{128,64,1}, function(i,j)
+    return quote
+      var v = img:get(i+0,j+1) + img:get(i+2,j+1)
+      + img:get(i+1,j+2) + img:get(i+1,j+0)
+      - 4 * img:get(i+1,j+1)
+      out:set(i,j,v)
+    end
+  end)]
+end
+  \end{lstlisting}
 \end{frame}
 
 \begin{frame}
@@ -334,9 +419,14 @@
 \begin{frame}
 	\frametitle{Evaluation}
   \begin{itemize}
-  \item Similar performance to ATLAS, which is written in C and assembly.\pause
-  \item Shorter code, easier to read/write/maintain.
+  \item Similar performance to ATLAS.\pause
+  \item ATLAS: a high-performance scientific computing library written in C and assembly.\pause
+  \item Shorter code, easier to read/write/maintain.\pause
   \end{itemize}
+
+  \begin{center}
+    \includegraphics[scale=0.5]{terra3.png}
+  \end{center}
 \end{frame}
 
 \begin{frame}

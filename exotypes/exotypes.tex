@@ -1,6 +1,20 @@
 \documentclass{beamer}
 
 \usepackage{hyperref}
+\usepackage{listings}
+
+\lstset{
+  columns=fixed,
+  frame=none,
+  backgroundcolor=\color[RGB]{245,245,244},
+  keywordstyle=\color[RGB]{40,40,255},
+  numberstyle=\footnotesize\color{darkgray},
+  comment=[l]{--},
+  commentstyle=\it\color[RGB]{0,96,96},
+  stringstyle=\rmfamily\slshape\color[RGB]{128,0,0},
+  showstringspaces=false,
+  morekeywords={terra, if, else, end, int, then, return, struct, float, local, quote, function, in, do, and, or}
+}
 
 \usetheme{CambridgeUS}
 \usecolortheme{crane}
@@ -40,14 +54,79 @@
 \begin{frame}
 	\frametitle{Solution}
   \begin{itemize}
-  \item AOP + MSP.\pause
+  \item MOP + MSP.\pause
+  \item MOP: Meta-Object Protocol\pause
+  \item In Lua, we use metatables to extend the normal semantics of objects.
   \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Metatables}
+  \begin{lstlisting}
+  local myobj = {}
+  setmetatable(myobj,
+  { __index = function(self,field)
+    return field end
+  })
+  print(myobj.somefield)
+  \end{lstlisting} \pause
+
+  \begin{itemize}
+  \item If the key doesn't exist, the Lua interpreter will call the $\_\_index$ function.\pause
+  \item In this case, we can get string $"somefield"$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{How To Define An Exotype}
+  \begin{itemize}
+  \item $(() \rightarrow MemoryLayout) \star (OP_1 \rightarrow Quote) \star \dots \star (OP_n \rightarrow Quote)$\pause
+  \item Firstly, compute the memory layout.\pause
+  \item Given an instance of a primitive operation($OP_i$), generate a concrete expression quote to implement it.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Memory Layout}
+  \begin{lstlisting}
+    Student = terralib.types.newstruct()
+    Student.metamethods.__getentries = function()
+    return { {field = "name", type = rawstring },
+      {field = "year", type = int} }
+    end
+  \end{lstlisting}\pause
+  \begin{itemize}
+  \item We use the metatable $\_\_getentries$.\pause
+  \item So we can define the data structure by using external information.\pause
+  \item The keyword $struct$ is a syntax sugar.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+	\frametitle{Memory Layout}
+  \begin{lstlisting}
+  Student2.metamethods.__getentries = function()
+    local file = io.open("data.csv","r")
+    --e.g. name,year
+    local titles = split(",",file:read("*line"))
+    local data = split(",",file:read("*line"))
+    local entries = {}
+    --loop over entries in titles
+    for i,field in ipairs(titles) do
+      --is the data a string or an integer?
+      local type =
+        tonumber(data[i]) and int or rawstring
+      entries[i] = { field = field, type = type}
+    end
+    return entries
+  end
+  \end{lstlisting}
 \end{frame}
 
 \begin{frame}
 	\frametitle{Reference}
   \begin{itemize}
-  \item Zachary DeVito, Daniel Ritchie, Matt Fisher, Alex Aiken, and Pat Hanrahan. 2014. First-class runtime generation of high-performance types using exotypes. In Proceedings of the 35th Conference on Programming Language Design and Implementation. ACM, 11.
+  \item Zachary DeVito, Daniel Ritchie, Matt Fisher, Alex Aiken, and Pat Hanrahan. 2014. First-class runtime generation of high-performance types using exotypes. In Proceedings of the 35th ACM SIGPLAN Conference on Programming Language Design and Implementation (PLDI '14). Association for Computing Machinery, New York, NY, USA, 77–88. \url{https://doi.org/10.1145/2594291.2594307}
   \item dictionary.com. \url{https://www.dictionary.com/browse/exo}
   \item Zachary DeVito, James Hegarty, Alex Aiken, Pat Hanrahan, and Jan Vitek. 2013. Terra: A multi-stage language for highperformance computing. In Proceedings of the 34th ACM SIGPLAN Conference on Programming Language Design and Implementation (PLDI’13). ACM, New York, 105–116. DOI:\url{https://doi.org/10.1145/2491956.2462166}
   \item Terra: A low-level counterpart to Lua. \url{https://terralang.org/}

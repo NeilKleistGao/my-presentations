@@ -140,9 +140,9 @@ out: &GreyscaleImage) : {}
   out:init(newN)
   for i = 0,newN do
     for j = 0,newN do
-      var v = img:get(i+0,j+1) + img:get(i+2,j+1)
-      10 + img:get(i+1,j+2) + img:get(i+1,j+0)
-      - 4 * img:get(i+1,j+1)
+      var v = -img:get(i+0,j+1) - img:get(i+2,j+1)
+      - img:get(i+1,j+2) - img:get(i+1,j+0)
+      + 4 * img:get(i+1,j+1)
       out:set(i,j,v)
     end
   end
@@ -198,9 +198,9 @@ out: &GreyscaleImage) : {}
   out:init(newN)
   [blockedloop(newN,{128,64,1}, function(i,j)
     return quote
-      var v = img:get(i+0,j+1) + img:get(i+2,j+1)
-      + img:get(i+1,j+2) + img:get(i+1,j+0)
-      - 4 * img:get(i+1,j+1)
+      var v = -img:get(i+0,j+1) - img:get(i+2,j+1)
+      - img:get(i+1,j+2) - img:get(i+1,j+0)
+      + 4 * img:get(i+1,j+1)
       out:set(i,j,v)
     end
   end)]
@@ -283,7 +283,7 @@ end
   \begin{gather*}
     e_1 \thickspace \Sigma_1 \LArr l \thickspace \Sigma_2 \quad e_2 \thickspace \Sigma_2 \LArr \dot{T_1} \thickspace \Sigma_3 \quad e_3 \thickspace \Sigma_3 \LArr \dot{T_2} \thickspace \Sigma_4 \\
     \Sigma_4 = \Gamma_1, S_1, F_1 \quad \ude{x} \thickspace fresh \\
-    \frac{\dot{e} \thickspace \Sigma_4[x \leftarrow \ude{x}] \SArr \ude{x} \thickspace \Gamma_2, S_2, F_2 \quad F_2(l) = \bullet}{ter \thickspace e_1(x: e_2): e_3\{\dot{e}\} \thickspace \Sigma_1 \LArr l \thickspace \Gamma_1, S_2, F_2[l \leftarrow <\ude{x}, \dot{T_1}, \dot{T_2}, \ude{e}>]}\tag{LTDEFN}
+    \frac{\dot{e} \thickspace \Sigma_4[x \leftarrow \ude{x}] \SArr \ude{e} \thickspace \Gamma_2, S_2, F_2 \quad F_2(l) = \bullet}{ter \thickspace e_1(x: e_2): e_3\{\dot{e}\} \thickspace \Sigma_1 \LArr l \thickspace \Gamma_1, S_2, F_2[l \leftarrow <\ude{x}, \dot{T_1}, \dot{T_2}, \ude{e}>]}\tag{LTDEFN}
   \end{gather*}
   \newline
   \begin{equation}
